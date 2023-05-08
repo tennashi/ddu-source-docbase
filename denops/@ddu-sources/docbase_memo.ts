@@ -85,6 +85,7 @@ export class Source extends BaseSource<Params> {
             id: post.id,
             title: post.title,
             body: post.body,
+            url: post.url,
           },
         }));
 

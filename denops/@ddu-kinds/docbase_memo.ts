@@ -19,6 +19,7 @@ export type ActionData = {
   id: number;
   title: string;
   body: string;
+  url: string;
 };
 
 type Params = Record<never, never>;
@@ -86,6 +87,12 @@ export class Kind extends BaseKind<Params> {
 
       return Promise.resolve(ActionFlags.RefreshItems);
     },
+    open: (args: ActionArguments<Params>): Promise<ActionFlags> => {
+      const action = args.items[0].action as ActionData;
+      new Deno.Command("open", { args: [action.url] }).outputSync();
+
+      return Promise.resolve(ActionFlags.Persist);
+    },
   };
 
   getPreviewer(
@@ -96,6 +103,7 @@ export class Kind extends BaseKind<Params> {
     return Promise.resolve({
       kind: "nofile",
       contents: action.body.split(/\r?\n/),
+      syntax: "markdown",
     });
   }
 
