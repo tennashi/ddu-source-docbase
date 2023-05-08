@@ -79,7 +79,7 @@ export class Source extends BaseSource<Params> {
         const items = res.posts.map((
           post: Post,
         ): Item<ActionData> => ({
-          word: `${post.id}.md`,
+          word: `${post.id}`,
           display: post.title,
           action: {
             id: post.id,

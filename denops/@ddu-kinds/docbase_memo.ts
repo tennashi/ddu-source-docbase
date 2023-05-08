@@ -13,6 +13,7 @@ import { setbufvar } from "https://deno.land/x/denops_std@v4.1.8/function/mod.ts
 import { format } from "https://deno.land/x/denops_std@v4.1.8/bufname/mod.ts";
 import type { Bufname } from "https://deno.land/x/denops_std@v4.1.8/bufname/mod.ts";
 import { group } from "https://deno.land/x/denops_std@v4.1.8/autocmd/mod.ts";
+import { input } from "https://deno.land/x/denops_std@v4.1.8/helper/mod.ts";
 
 export type ActionData = {
   id: number;
@@ -55,6 +56,35 @@ export class Kind extends BaseKind<Params> {
       });
 
       return ActionFlags.None;
+    },
+    new: async (args: ActionArguments<Params>): Promise<ActionFlags> => {
+      const title = await input(args.denops, {
+        prompt: "(title)> ",
+      });
+
+      if (!title) {
+        return ActionFlags.Persist;
+      }
+
+      await args.denops.dispatch(
+        "ddu-source-docbase",
+        "createMemo",
+        title,
+      );
+
+      return ActionFlags.RefreshItems;
+    },
+    delete: (args: ActionArguments<Params>): Promise<ActionFlags> => {
+      args.items.forEach(async (item) => {
+        const action = item.action as ActionData;
+        await args.denops.dispatch(
+          "ddu-source-docbase",
+          "deleteMemo",
+          action.id,
+        );
+      });
+
+      return Promise.resolve(ActionFlags.RefreshItems);
     },
   };
 

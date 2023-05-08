@@ -1,5 +1,8 @@
 import { Denops } from "https://deno.land/x/denops_std@v4.1.8/mod.ts";
-import { assertString } from "https://deno.land/x/unknownutil@v2.1.0/mod.ts";
+import {
+  assertNumber,
+  assertString,
+} from "https://deno.land/x/unknownutil@v2.1.0/mod.ts";
 import { parse } from "https://deno.land/x/denops_std@v4.1.8/bufname/mod.ts";
 import {
   bufnr,
@@ -8,6 +11,8 @@ import {
 } from "https://deno.land/x/denops_std@v4.1.8/function/mod.ts";
 import { globals } from "https://deno.land/x/denops_std@v4.1.8/variable/mod.ts";
 import ky from "https://esm.sh/ky@0.33.3";
+
+import { sleep } from "https://deno.land/x/sleep/mod.ts";
 
 export async function main(denops: Denops): Promise<void> {
   const apiToken = await globals.get(
@@ -51,6 +56,43 @@ export async function main(denops: Denops): Promise<void> {
         },
       );
       await setbufvar(denops, bufNumber, "&modified", 0);
+    },
+
+    async createMemo(title: unknown): Promise<void> {
+      assertString(title);
+
+      await ky.post(
+        `https://api.docbase.io/teams/${teamName}/posts`,
+        {
+          json: {
+            title: title,
+            body: "",
+            draft: true,
+          },
+          headers: {
+            "X-DocBaseToken": apiToken,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      await sleep(1);
+    },
+
+    async deleteMemo(id: unknown): Promise<void> {
+      assertNumber(id);
+
+      await ky.delete(
+        `https://api.docbase.io/teams/${teamName}/posts/${id}`,
+        {
+          headers: {
+            "X-DocBaseToken": apiToken,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      await sleep(1);
     },
   };
 }
